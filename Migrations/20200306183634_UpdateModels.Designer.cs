@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Event_Hub_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20200306123227_Initial")]
-    partial class Initial
+    [Migration("20200306183634_UpdateModels")]
+    partial class UpdateModels
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -92,6 +92,7 @@ namespace Event_Hub_API.Migrations
                         .HasColumnType("int");
 
                     b.Property<int?>("EventId")
+                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<double>("Price")
@@ -114,10 +115,14 @@ namespace Event_Hub_API.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .IsRequired()
+                        .HasColumnType("varchar(30) CHARACTER SET utf8mb4")
+                        .HasMaxLength(30);
 
                     b.Property<string>("Password")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .IsRequired()
+                        .HasColumnType("varchar(8) CHARACTER SET utf8mb4")
+                        .HasMaxLength(8);
 
                     b.HasKey("Id");
 
@@ -137,7 +142,9 @@ namespace Event_Hub_API.Migrations
                 {
                     b.HasOne("Event_Hub_API.Models.Event", "Event")
                         .WithMany()
-                        .HasForeignKey("EventId");
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

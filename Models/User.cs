@@ -1,9 +1,19 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Event_Hub_API.Models
 {
     public class User
     {
         public int Id { get; set; }
+
+        [Required(ErrorMessage = "A email is required.")]
+        [StringLength(30,ErrorMessage = "email is very long")]
+        [MinLength(3,ErrorMessage = "email is too short")]
         public string Email { get; set; }
+
+        [Required(ErrorMessage = "{0} required.")]
+        [MinLength(4,ErrorMessage = "Your password is too short")]
+        [StringLength(8,ErrorMessage = "Your password is very long")]
         public string Password { get; set; }
 
     }
