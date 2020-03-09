@@ -1,6 +1,9 @@
+using System;
+using System.Linq;
 using Event_Hub_API.Data;
 using Event_Hub_API.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Event_Hub_API.Controllers
 {
@@ -15,11 +18,21 @@ namespace Event_Hub_API.Controllers
 
         [HttpGet]
         public IActionResult GetUsers(){
-            return Ok(new {name = "Nome do usuário", informations = "outras informações"});
+            var allUsers = Database.Users.ToList();
+            return Ok(allUsers);
         }
         [HttpGet("{id}")]
         public IActionResult Get(int id){
-            return Ok("Status GET OK \n> Listar usuário por ID: "+ id);
+            try
+            {
+                var UserById = Database.Users.FirstOrDefault(x => x.Id == id);
+                return Ok(UserById);
+            }
+            catch (Exception)
+            {
+               return BadRequest("Invalid Id!");
+            }
+
         }
         [HttpPost]
         public IActionResult Post([FromBody] User UserAttribute){
@@ -32,7 +45,39 @@ namespace Event_Hub_API.Controllers
             Database.Add(NewUser);
             Database.SaveChanges();
 
-            return Ok(new {info = "Usuário registrado com sucesso!", user = UserAttribute});
+            Response.StatusCode = 201;
+            return new ObjectResult(new {info = "User successfully registered!", user = UserAttribute});
+        }
+        [Route("asc")]
+        [HttpGet]
+        public IActionResult OrderByAsc(){
+            var ascendingOrder = Database.Users.OrderBy(x => x.Email).ToList();
+            return Ok(ascendingOrder);
+        }
+
+        [Route("desc")]
+        [HttpGet]
+        public IActionResult OrderByDesc(){
+            var descendingOrder = Database.Users.OrderByDescending(x => x.Email).ToList();
+            return Ok(descendingOrder);
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            try
+            {
+                User UserId = Database.Users.First(x => x.Id == id);
+                Database.Users.Remove(UserId);
+                Database.SaveChanges();
+
+                return Ok();
+            }
+            catch (Exception)
+            {
+                Response.StatusCode = 404;
+                return new ObjectResult(new {msg = "id not fount!"});
+            }
         }
     }
 }
