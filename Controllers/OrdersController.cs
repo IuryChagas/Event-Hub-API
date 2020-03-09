@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Event_Hub_API.Data;
 using Event_Hub_API.Models;
@@ -17,12 +18,20 @@ namespace Event_Hub_API.Controllers
 
         [HttpGet]
         public IActionResult GetOrders(){
-            var OrderList = Database.Orders.Include(x => x.Event).ToList();
-            return Ok(OrderList);
+            var allOrders = Database.Orders.Include(x => x.Event).ToList();
+            return Ok(allOrders);
         }
         [HttpGet("{id}")]
         public IActionResult Get(int id){
-            return Ok("Status GET OK \n> Listar venda por ID: "+ id);
+            try
+            {
+                var OrderId = Database.Orders.FirstOrDefault(x => x.Id == id);
+                return Ok(OrderId);
+            }
+            catch (Exception)
+            {
+                return BadRequest(new {msg = "invalid Id!"});
+            }
         }
         [HttpPost]
         public IActionResult Post([FromBody] Order OrderAttribute){
@@ -36,7 +45,39 @@ namespace Event_Hub_API.Controllers
             Database.Add(NewOrder);
             Database.SaveChanges();
 
-            return Ok(new {info = "Compra registrada com sucesso!", order = OrderAttribute});
+            Response.StatusCode = 201;
+            return new ObjectResult(new {info = "Purchase successfully registered!", order = OrderAttribute});
+        }
+        [Route("asc")]
+        [HttpGet]
+        public IActionResult OrderByAsc(){
+            var ascendingOrder = Database.Orders.OrderBy(x => x.Price).ToList();
+            return Ok(ascendingOrder);
+        }
+
+        [Route("desc")]
+        [HttpGet]
+        public IActionResult OrderByDesc(){
+            var descendingOrder = Database.Orders.OrderByDescending(x => x.Price).ToList();
+            return Ok(descendingOrder);
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            try
+            {
+                Order OrderId = Database.Orders.First(x => x.Id == id);
+                Database.Orders.Remove(OrderId);
+                Database.SaveChanges();
+
+                return Ok();
+            }
+            catch (Exception)
+            {
+                Response.StatusCode = 404;
+                return new ObjectResult(new {msg = "id not fount!"});
+            }
         }
     }
 }
