@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Event_Hub_API.Data;
 using Event_Hub_API.Models;
@@ -17,12 +18,60 @@ namespace Event_Hub_API.Controllers
 
         [HttpGet]
         public IActionResult GetClubs(){
-            var ClubList = Database.Clubs.ToList();
-            return Ok(ClubList);
+            var allClubs = Database.Clubs.ToList();
+            return Ok(allClubs);
         }
+
+        [Route("asc")]
+        [HttpGet]
+        public IActionResult OrderByAsc(){
+            var ascendingOrder = Database.Clubs.OrderBy(x => x.Name).ToList();
+            return Ok(ascendingOrder);
+        }
+
+        [Route("desc")]
+        [HttpGet]
+        public IActionResult OrderByDesc(){
+            var descendingOrder = Database.Clubs.OrderByDescending(x => x.Name).ToList();
+            return Ok(descendingOrder);
+        }
+
+        [Route("maximumcapacity/asc")]
+        [HttpGet]
+        public IActionResult MaximumCapacityOrderByAsc(){
+            var ascendingOrder = Database.Clubs.OrderBy(x => x.MaximumCapacity).ToList();
+            return Ok(ascendingOrder);
+        }
+
+        [Route("maximumcapacity/desc")]
+        [HttpGet]
+        public IActionResult MaximumCapacityOrderByDesc(){
+            var descendingOrder = Database.Clubs.OrderByDescending(x => x.MaximumCapacity).ToList();
+            return Ok(descendingOrder);
+        }
+
+        [Route("name/{queryName}")]
+        [HttpGet]
+        public IActionResult GetByName(string queryName){
+            var ClubSearched = Database.Clubs.Where(x => x.Name.Contains(queryName, StringComparison.InvariantCultureIgnoreCase)).ToList();
+
+            if(ClubSearched == null){
+                return NotFound();
+            }
+            return Ok(ClubSearched);
+        }
+
         [HttpGet("{id}")]
         public IActionResult Get(int id){
-            return Ok("Status GET OK \n> Listar por ID: "+ id);
+
+                var ClubId = Database.Clubs.FirstOrDefault(x => x.Id == id);
+
+                if (ClubId == null)
+                {
+                    return new NotFoundObjectResult(new { msg = "invalid id!"});
+                }
+
+                return Ok(ClubId);
         }
 
         [HttpPost]
@@ -40,7 +89,65 @@ namespace Event_Hub_API.Controllers
             Database.Add(NewClub);
             Database.SaveChanges();
 
-            return Ok(new {info = "Club registrado com sucesso!", club = ClubAttribute});
+            Response.StatusCode = 201;
+            return new ObjectResult(new {info = "Club successfully registered!", club = ClubAttribute});
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult Put(int id, [FromBody] Club club)
+        {
+            if(club.Id > 0){
+                try
+                {
+                    if (id != club.Id)
+                    {
+                        throw new Exception("invalid id!");
+                    }
+                    var clubId = Database.Clubs.First(changeClub => changeClub.Id == club.Id);
+                    if (clubId != null)
+                    {
+                        clubId.Name = club.Name != null ? club.Name : clubId.Name;
+                        clubId.Street = club.Street != null ? club.Street : clubId.Street;
+                        clubId.Number = club.Number != 0 ? club.Number : clubId.Number;
+                        clubId.ZipCode = club.ZipCode != null ? club.ZipCode : clubId.ZipCode;
+                        clubId.City = club.City != null ? club.City : clubId.City;
+                        clubId.MaximumCapacity = club.MaximumCapacity != 0 ? club.MaximumCapacity : clubId.MaximumCapacity;
+
+                        Database.SaveChanges();
+                        Response.StatusCode = 200;
+                        return new ObjectResult("");
+
+                    }else {
+                        Response.StatusCode = 400;
+                        return new ObjectResult(new {msg = "Club not found!"});
+                    }
+                }
+                catch
+                {
+                    return new ObjectResult(new {msg = "Club not found!"});
+                }
+            }else{
+                Response.StatusCode = 400;
+                return new ObjectResult(new {msg = "invalid id!"});
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            try
+            {
+                Club ClubId = Database.Clubs.First(x => x.Id == id);
+                Database.Clubs.Remove(ClubId);
+                Database.SaveChanges();
+
+                return Ok();
+            }
+            catch (Exception)
+            {
+                Response.StatusCode = 404;
+                return new ObjectResult(new {msg = "id not fount!"});
+            }
         }
     }
 }
