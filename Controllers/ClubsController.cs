@@ -87,7 +87,6 @@ namespace Event_Hub_API.Controllers
                 NewClub.ZipCode = ClubAttribute.ZipCode;
                 NewClub.City = ClubAttribute.City;
                 NewClub.MaximumCapacity = ClubAttribute.MaximumCapacity;
-
                 Database.Add(NewClub);
                 Database.SaveChanges();
 
@@ -95,7 +94,7 @@ namespace Event_Hub_API.Controllers
                 return new ObjectResult(new {info = "Club successfully registered!", club = ClubAttribute});
             }
             Response.StatusCode = 400;
-            return new ObjectResult(new {msg = "The server could not understand the request due to invalid syntax."});
+            return new ObjectResult(new {msg = ModelState.Values.SelectMany(v => v.Errors).Select(v => v.ErrorMessage).ToList()});
         }
 
         [HttpPut("{id}")]

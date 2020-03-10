@@ -135,10 +135,7 @@ namespace Event_Hub_API.Controllers
             if (!Database.Clubs.Any(x => x.Id == EventAttribute.ClubId))
             {
                 Response.StatusCode = 406;
-                return new ObjectResult(new {
-                    info = "Not Acceptable. Doesn't find any content that conforms to the criteria given by the user agent. ",
-                    msg = "Please set a club id valid"
-                });
+                return new ObjectResult(new {msg = ModelState.Values.SelectMany(v => v.Errors).Select(v => v.ErrorMessage).ToList()});
             }
 
             if (ModelState.IsValid)
