@@ -22,9 +22,6 @@ namespace Event_Hub_API
         {
             services.AddDbContext<ApplicationDbContext>(options => options.UseMySql(Configuration.GetConnectionString("DefaultConnection")));
             services.AddControllers();
-            // services.AddSwaggerGen(config => {
-            //     config.SwaggerDoc("", new Microsoft.OpenApi.Models.OpenApiInfo {Title="EventHub API"});
-            // });
             services.AddSwaggerGen(config => {
                 config.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo {Title="EventHub API", Version = "v1"});
             });
