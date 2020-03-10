@@ -23,15 +23,13 @@ namespace Event_Hub_API.Controllers
         }
         [HttpGet("{id}")]
         public IActionResult Get(int id){
-            try
-            {
-                var UserById = Database.Users.FirstOrDefault(x => x.Id == id);
-                return Ok(UserById);
-            }
-            catch (Exception)
-            {
-               return BadRequest("Invalid Id!");
-            }
+
+                if (ModelState.IsValid)
+                {
+                    var UserById = Database.Users.FirstOrDefault(x => x.Id == id);
+                    return new ObjectResult(new {UserById.Id, UserById.Email});
+                }
+                return BadRequest("Invalid Id!");
 
         }
         [HttpPost]
