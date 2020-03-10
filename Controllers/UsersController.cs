@@ -18,18 +18,18 @@ namespace Event_Hub_API.Controllers
 
         [HttpGet]
         public IActionResult GetUsers(){
-            var allUsers = Database.Users.ToList();
-            return Ok(allUsers);
+            var AllUsers = Database.Users.ToList();
+            return Ok(AllUsers);
         }
         [HttpGet("{id}")]
         public IActionResult Get(int id){
+            var UserById = Database.Users.FirstOrDefault(x => x.Id == id);
 
-                if (ModelState.IsValid)
-                {
-                    var UserById = Database.Users.FirstOrDefault(x => x.Id == id);
-                    return new ObjectResult(new {UserById.Id, UserById.Email});
-                }
-                return BadRequest("Invalid Id!");
+            if (UserById == null)
+            {
+                return NotFound();
+            }
+            return Ok (UserById);
 
         }
         [HttpPost]
@@ -46,16 +46,16 @@ namespace Event_Hub_API.Controllers
             Response.StatusCode = 201;
             return new ObjectResult(new {info = "User successfully registered!", user = UserAttribute});
         }
-        [Route("asc")]
+        [Route("email/asc")]
         [HttpGet]
-        public IActionResult OrderByAsc(){
+        public IActionResult EmailAsc(){
             var ascendingOrder = Database.Users.OrderBy(x => x.Email).ToList();
             return Ok(ascendingOrder);
         }
 
-        [Route("desc")]
+        [Route("email/desc")]
         [HttpGet]
-        public IActionResult OrderByDesc(){
+        public IActionResult EmailDesc(){
             var descendingOrder = Database.Users.OrderByDescending(x => x.Email).ToList();
             return Ok(descendingOrder);
         }

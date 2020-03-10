@@ -22,30 +22,30 @@ namespace Event_Hub_API.Controllers
             return Ok(allClubs);
         }
 
-        [Route("asc")]
+        [Route("name/asc")]
         [HttpGet]
-        public IActionResult OrderByAsc(){
+        public IActionResult NameAsc(){
             var ascendingOrder = Database.Clubs.OrderBy(x => x.Name).ToList();
             return Ok(ascendingOrder);
         }
 
-        [Route("desc")]
+        [Route("name/desc")]
         [HttpGet]
-        public IActionResult OrderByDesc(){
+        public IActionResult NameDesc(){
             var descendingOrder = Database.Clubs.OrderByDescending(x => x.Name).ToList();
             return Ok(descendingOrder);
         }
 
         [Route("maximumcapacity/asc")]
         [HttpGet]
-        public IActionResult MaximumCapacityOrderByAsc(){
+        public IActionResult CapacityAsc(){
             var ascendingOrder = Database.Clubs.OrderBy(x => x.MaximumCapacity).ToList();
             return Ok(ascendingOrder);
         }
 
         [Route("maximumcapacity/desc")]
         [HttpGet]
-        public IActionResult MaximumCapacityOrderByDesc(){
+        public IActionResult CapacityDesc(){
             var descendingOrder = Database.Clubs.OrderByDescending(x => x.MaximumCapacity).ToList();
             return Ok(descendingOrder);
         }
@@ -77,20 +77,25 @@ namespace Event_Hub_API.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] Club ClubAttribute){
 
-            Club NewClub = new Club();
+            if (ModelState.IsValid)
+            {
+                Club NewClub = new Club();
 
-            NewClub.Name = ClubAttribute.Name;
-            NewClub.Street = ClubAttribute.Street;    
-            NewClub.Number = ClubAttribute.Number;
-            NewClub.ZipCode = ClubAttribute.ZipCode;
-            NewClub.City = ClubAttribute.City;
-            NewClub.MaximumCapacity = ClubAttribute.MaximumCapacity;
+                NewClub.Name = ClubAttribute.Name;
+                NewClub.Street = ClubAttribute.Street;
+                NewClub.Number = ClubAttribute.Number;
+                NewClub.ZipCode = ClubAttribute.ZipCode;
+                NewClub.City = ClubAttribute.City;
+                NewClub.MaximumCapacity = ClubAttribute.MaximumCapacity;
 
-            Database.Add(NewClub);
-            Database.SaveChanges();
+                Database.Add(NewClub);
+                Database.SaveChanges();
 
-            Response.StatusCode = 201;
-            return new ObjectResult(new {info = "Club successfully registered!", club = ClubAttribute});
+                Response.StatusCode = 201;
+                return new ObjectResult(new {info = "Club successfully registered!", club = ClubAttribute});
+            }
+            Response.StatusCode = 400;
+            return new ObjectResult(new {msg = "The server could not understand the request due to invalid syntax."});
         }
 
         [HttpPut("{id}")]

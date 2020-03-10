@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Event_Hub_API.Models
 {
@@ -16,7 +17,7 @@ namespace Event_Hub_API.Models
         [Required(ErrorMessage = "{0} required.")]
         [MinLength(4,ErrorMessage = "Your password is too short")]
         [StringLength(8,ErrorMessage = "Your password is very long")]
-        [IgnoreDataMember]
+        [JsonIgnore]
         public string Password { get; set; }
 
     }

@@ -25,56 +25,42 @@ namespace Event_Hub_API.Controllers
 
         [Route("title/asc")]
         [HttpGet]
-        public IActionResult OrderByTitleAsc(){
+        public IActionResult TitleAsc(){
             var ascendingOrder = Database.Events.OrderBy(x => x.Title).ToList();
             return Ok(ascendingOrder);
         }
 
         [Route("title/desc")]
         [HttpGet]
-        public IActionResult OrderByTitleDesc(){
+        public IActionResult TitleDesc(){
             var descendingOrder = Database.Events.OrderByDescending(x => x.Title).ToList();
             return Ok(descendingOrder);
         }
 
         [Route("releasedata/asc")]
         [HttpGet]
-        public IActionResult OrderDateByAsc(){
+        public IActionResult DateByAsc(){
             var ascendingOrder = Database.Events.OrderBy(x => x.ReleaseDate).ToList();
             return Ok(ascendingOrder);
         }
 
         [Route("releasedata/desc")]
         [HttpGet]
-        public IActionResult OrderDateByDesc(){
+        public IActionResult DateByDesc(){
             var descendingOrder = Database.Events.OrderByDescending(x => x.ReleaseDate).ToList();
-            return Ok(descendingOrder);
-        }
-
-        [Route("title/asc")]
-        [HttpGet]
-        public IActionResult OrderTitleByAsc(){
-            var ascendingOrder = Database.Events.OrderBy(x => x.Title).ToList();
-            return Ok(ascendingOrder);
-        }
-
-        [Route("title/desc")]
-        [HttpGet]
-        public IActionResult OrderTitleByDesc(){
-            var descendingOrder = Database.Events.OrderByDescending(x => x.Title).ToList();
             return Ok(descendingOrder);
         }
 
         [Route("price/asc")]
         [HttpGet]
-        public IActionResult OrderByAsc(){
+        public IActionResult PriceAsc(){
             var ascendingOrder = Database.Events.OrderBy(x => x.Price).ToList();
             return Ok(ascendingOrder);
         }
 
         [Route("price/desc")]
         [HttpGet]
-        public IActionResult OrderByDesc(){
+        public IActionResult PriceDesc(){
             var descendingOrder = Database.Events.OrderByDescending(x => x.Price).ToList();
             return Ok(descendingOrder);
         }
@@ -146,19 +132,32 @@ namespace Event_Hub_API.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] Event EventAttribute){
 
-            Event NewEvent = new Event();
+            if (!Database.Clubs.Any(x => x.Id == EventAttribute.ClubId))
+            {
+                Response.StatusCode = 406;
+                return new ObjectResult(new {
+                    info = "Not Acceptable. Doesn't find any content that conforms to the criteria given by the user agent. ",
+                    msg = "Please set a club id valid"
+                });
+            }
 
-            NewEvent.Title = EventAttribute.Title;
-            NewEvent.Price = EventAttribute.Price;
-            NewEvent.ReleaseDate = EventAttribute.ReleaseDate;
-            NewEvent.ClubId = EventAttribute.ClubId;
-            NewEvent.Units = EventAttribute.Units;
+            if (ModelState.IsValid)
+            {
+                Event NewEvent = new Event();
 
-            Database.Add(NewEvent);
-            Database.SaveChanges();
+                NewEvent.Title = EventAttribute.Title;
+                NewEvent.Price = EventAttribute.Price;
+                NewEvent.ReleaseDate = EventAttribute.ReleaseDate;
+                NewEvent.ClubId = EventAttribute.ClubId;
+                NewEvent.Units = EventAttribute.Units;
 
-            Response.StatusCode = 201;
-            return new ObjectResult(new {info = "Event successfully registered!", events = EventAttribute});
+                Database.Add(NewEvent);
+                Database.SaveChanges();
+
+                Response.StatusCode = 201;
+                return new ObjectResult(new {info = "Event successfully registered!", events = EventAttribute});
+            }
+            return BadRequest();
         }
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)

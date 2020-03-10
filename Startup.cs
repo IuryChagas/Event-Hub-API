@@ -22,6 +22,12 @@ namespace Event_Hub_API
         {
             services.AddDbContext<ApplicationDbContext>(options => options.UseMySql(Configuration.GetConnectionString("DefaultConnection")));
             services.AddControllers();
+            // services.AddSwaggerGen(config => {
+            //     config.SwaggerDoc("", new Microsoft.OpenApi.Models.OpenApiInfo {Title="EventHub API"});
+            // });
+            services.AddSwaggerGen(config => {
+                config.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo {Title="EventHub API", Version = "v1"});
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -41,6 +47,11 @@ namespace Event_Hub_API
             {
                 endpoints.MapControllers();
             });
+            app.UseSwaggerUI(c =>{
+                string swaggerJsonBasePath = string.IsNullOrWhiteSpace(c.RoutePrefix) ? "." : "..";
+                c.SwaggerEndpoint($"{swaggerJsonBasePath}/swagger/v1/swagger.json", "v1 docs");
+                });
+            app.UseSwagger();
         }
     }
 }

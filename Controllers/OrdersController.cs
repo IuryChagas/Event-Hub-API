@@ -48,16 +48,16 @@ namespace Event_Hub_API.Controllers
             Response.StatusCode = 201;
             return new ObjectResult(new {info = "Purchase successfully registered!", order = OrderAttribute});
         }
-        [Route("asc")]
+        [Route("price/asc")]
         [HttpGet]
-        public IActionResult OrderByAsc(){
+        public IActionResult PriceAsc(){
             var ascendingOrder = Database.Orders.OrderBy(x => x.Price).ToList();
             return Ok(ascendingOrder);
         }
 
-        [Route("desc")]
+        [Route("price/desc")]
         [HttpGet]
-        public IActionResult OrderByDesc(){
+        public IActionResult PriceDesc(){
             var descendingOrder = Database.Orders.OrderByDescending(x => x.Price).ToList();
             return Ok(descendingOrder);
         }
