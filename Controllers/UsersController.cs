@@ -1,10 +1,12 @@
 using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Text;
 using Event_Hub_API.Data;
 using Event_Hub_API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.IdentityModel.Tokens;
 namespace Event_Hub_API.Controllers
 {
     [Route("api/[controller]")]
@@ -18,12 +20,25 @@ namespace Event_Hub_API.Controllers
 
         [HttpGet]
         public IActionResult GetUsers(){
-            var AllUsers = Database.Users.ToList();
+            var usId = Database.Users.FirstOrDefault();
+            if (usId == null)
+            {
+                Response.StatusCode = 404;
+                return NotFound(new {info = "User not found!"});
+            }
+
+            var AllUsers = Database.Users.Select(x => new{x.Id, x.Email} ).ToList();
             return Ok(AllUsers);
         }
         [HttpGet("{id}")]
         public IActionResult Get(int id){
-            var UserById = Database.Users.FirstOrDefault(x => x.Id == id);
+            var usId = Database.Users.FirstOrDefault();
+            if (usId == null)
+            {
+                Response.StatusCode = 404;
+                return NotFound(new {info = "User not found!"});
+            }
+            var UserById = Database.Users.Select(x => new{x.Id, x.Email} ).FirstOrDefault(x => x.Id == id);
 
             if (UserById == null)
             {
@@ -46,36 +61,45 @@ namespace Event_Hub_API.Controllers
             Response.StatusCode = 201;
             return new ObjectResult(new {info = "User successfully registered!", user = UserAttribute});
         }
-        [Route("email/asc")]
-        [HttpGet]
-        public IActionResult EmailAsc(){
-            var ascendingOrder = Database.Users.OrderBy(x => x.Email).ToList();
-            return Ok(ascendingOrder);
-        }
-
-        [Route("email/desc")]
-        [HttpGet]
-        public IActionResult EmailDesc(){
-            var descendingOrder = Database.Users.OrderByDescending(x => x.Email).ToList();
-            return Ok(descendingOrder);
-        }
-
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
-        {
+        [HttpPost("Login")]
+        public IActionResult Login([FromBody] User  credentials){
             try
             {
-                User UserId = Database.Users.First(x => x.Id == id);
-                Database.Users.Remove(UserId);
-                Database.SaveChanges();
+                User user = Database.Users.First(user => user.Email.Equals(credentials.Email));
+                if (user != null)
+                {
+                    if(user.Password.Equals(credentials.Password)){
 
-                return Ok();
+                        string SecurityKey = "segurity_key__token";
+                        var symmetricKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecurityKey));
+
+                        var accessCredentials = new SigningCredentials(symmetricKey, SecurityAlgorithms.HmacSha256Signature);
+
+                        var JWT = new JwtSecurityToken(
+                            issuer: "EventHub API",
+                            expires: DateTime.Now.AddHours(1),
+                            audience: "users_admin",
+                            signingCredentials: accessCredentials
+                        );
+
+                        return Ok (new JwtSecurityTokenHandler().WriteToken(JWT));
+                        
+                    }else{
+                        Response.StatusCode = 401;
+                        return new ObjectResult(new {info = "Error Password >>> Unauthorized!"});
+                    }
+                } else
+                {
+                    Response.StatusCode = 401;
+                    return new ObjectResult(new {info = "Error Password >>> Unauthorized!"});
+                }
             }
-            catch (Exception)
+            catch (System.Exception)
             {
-                Response.StatusCode = 404;
-                return new ObjectResult(new {msg = "id not fount!"});
+                    Response.StatusCode = 404;
+                    return new ObjectResult(new {info = "Email not Found >>> Unauthorized!"});
             }
         }
+
     }
 }
