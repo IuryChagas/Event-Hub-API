@@ -18,6 +18,12 @@ namespace Event_Hub_API.Controllers
 
         [HttpGet]
         public IActionResult GetClubs(){
+            var clubId = Database.Clubs.FirstOrDefault();
+            if (clubId == null)
+            {
+                Response.StatusCode = 404;
+                return NotFound(new {info = "no registered club!"});
+            }
             var allClubs = Database.Clubs.ToList();
             return Ok(allClubs);
         }
@@ -25,6 +31,13 @@ namespace Event_Hub_API.Controllers
         [Route("name/asc")]
         [HttpGet]
         public IActionResult NameAsc(){
+            var clubId = Database.Clubs.FirstOrDefault();
+            if (clubId == null)
+            {
+                Response.StatusCode = 404;
+                return NotFound(new {info = "no registered club!"});
+            }
+
             var ascendingOrder = Database.Clubs.OrderBy(x => x.Name).ToList();
             return Ok(ascendingOrder);
         }
@@ -32,6 +45,13 @@ namespace Event_Hub_API.Controllers
         [Route("name/desc")]
         [HttpGet]
         public IActionResult NameDesc(){
+            var clubId = Database.Clubs.FirstOrDefault();
+            if (clubId == null)
+            {
+                Response.StatusCode = 404;
+                return NotFound(new {info = "no registered club!"});
+            }
+
             var descendingOrder = Database.Clubs.OrderByDescending(x => x.Name).ToList();
             return Ok(descendingOrder);
         }
@@ -39,6 +59,13 @@ namespace Event_Hub_API.Controllers
         [Route("maximumcapacity/asc")]
         [HttpGet]
         public IActionResult CapacityAsc(){
+            var clubId = Database.Clubs.FirstOrDefault();
+            if (clubId == null)
+            {
+                Response.StatusCode = 404;
+                return NotFound(new {info = "no registered club!"});
+            }
+
             var ascendingOrder = Database.Clubs.OrderBy(x => x.MaximumCapacity).ToList();
             return Ok(ascendingOrder);
         }
@@ -46,6 +73,13 @@ namespace Event_Hub_API.Controllers
         [Route("maximumcapacity/desc")]
         [HttpGet]
         public IActionResult CapacityDesc(){
+            var clubId = Database.Clubs.FirstOrDefault();
+            if (clubId == null)
+            {
+                Response.StatusCode = 404;
+                return NotFound(new {info = "no registered club!"});
+            }
+
             var descendingOrder = Database.Clubs.OrderByDescending(x => x.MaximumCapacity).ToList();
             return Ok(descendingOrder);
         }
@@ -53,9 +87,16 @@ namespace Event_Hub_API.Controllers
         [Route("name/{queryName}")]
         [HttpGet]
         public IActionResult GetByName(string queryName){
+            var clubId = Database.Clubs.FirstOrDefault();
+            if (clubId == null)
+            {
+                Response.StatusCode = 404;
+                return NotFound(new {info = "no registered club!"});
+            }
+
             var ClubSearched = Database.Clubs.Where(x => x.Name.Contains(queryName, StringComparison.InvariantCultureIgnoreCase)).ToList();
 
-            if(ClubSearched == null){
+            if(!ClubSearched.Any()){
                 return NotFound();
             }
             return Ok(ClubSearched);
@@ -63,15 +104,21 @@ namespace Event_Hub_API.Controllers
 
         [HttpGet("{id}")]
         public IActionResult Get(int id){
+            var isValid = Database.Clubs.FirstOrDefault();
+            if (isValid == null)
+            {
+                Response.StatusCode = 404;
+                return NotFound(new {info = "no registered club!"});
+            }
 
-                var ClubId = Database.Clubs.FirstOrDefault(x => x.Id == id);
+            var ClubId = Database.Clubs.FirstOrDefault(x => x.Id == id);
 
-                if (ClubId == null)
-                {
-                    return new NotFoundObjectResult(new { msg = "invalid id!"});
-                }
+            if (ClubId == null)
+            {
+                return new NotFoundObjectResult(new { msg = "invalid id!"});
+            }
 
-                return Ok(ClubId);
+            return Ok(ClubId);
         }
 
         [HttpPost]
@@ -128,7 +175,8 @@ namespace Event_Hub_API.Controllers
                 }
                 catch
                 {
-                    return new ObjectResult(new {msg = "Club not found!"});
+                    Response.StatusCode = 404;
+                    return NotFound(new {msg = "Club not found!"});
                 }
             }else{
                 Response.StatusCode = 400;

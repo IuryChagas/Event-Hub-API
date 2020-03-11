@@ -18,11 +18,25 @@ namespace Event_Hub_API.Controllers
 
         [HttpGet]
         public IActionResult GetOrders(){
-            var allOrders = Database.Orders.Include(x => x.Event).ToList();
+            var OrderId = Database.Orders.FirstOrDefault();
+            if (OrderId == null)
+            {
+                Response.StatusCode = 404;
+                return NotFound(new {info = "Order not found!"});
+            }
+
+            var allOrders = Database.Orders.ToList();
             return Ok(allOrders);
         }
         [HttpGet("{id}")]
         public IActionResult Get(int id){
+            var orderId = Database.Orders.FirstOrDefault();
+            if (orderId == null)
+            {
+                Response.StatusCode = 404;
+                return NotFound(new {info = "Order not found!"});
+            }
+
             try
             {
                 var OrderId = Database.Orders.FirstOrDefault(x => x.Id == id);
@@ -36,48 +50,19 @@ namespace Event_Hub_API.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] Order OrderAttribute){
 
-            Order NewOrder = new Order();
+                Order NewOrder = new Order();
 
-            NewOrder.Price = OrderAttribute.Price;
-            NewOrder.Units = OrderAttribute.Units;
-            NewOrder.EventId = OrderAttribute.EventId;
+                NewOrder.Price = OrderAttribute.Price;
+                NewOrder.Units = OrderAttribute.Units;
+                NewOrder.EventName = OrderAttribute.EventName;
 
-            Database.Add(NewOrder);
-            Database.SaveChanges();
-
-            Response.StatusCode = 201;
-            return new ObjectResult(new {info = "Purchase successfully registered!", order = OrderAttribute});
-        }
-        [Route("price/asc")]
-        [HttpGet]
-        public IActionResult PriceAsc(){
-            var ascendingOrder = Database.Orders.OrderBy(x => x.Price).ToList();
-            return Ok(ascendingOrder);
-        }
-
-        [Route("price/desc")]
-        [HttpGet]
-        public IActionResult PriceDesc(){
-            var descendingOrder = Database.Orders.OrderByDescending(x => x.Price).ToList();
-            return Ok(descendingOrder);
-        }
-
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
-        {
-            try
-            {
-                Order OrderId = Database.Orders.First(x => x.Id == id);
-                Database.Orders.Remove(OrderId);
+                Database.Add(NewOrder);
                 Database.SaveChanges();
 
-                return Ok();
-            }
-            catch (Exception)
-            {
-                Response.StatusCode = 404;
-                return new ObjectResult(new {msg = "id not fount!"});
-            }
+                Response.StatusCode = 201;
+                return new ObjectResult(new {info = "Purchase successfully registered!", order = OrderAttribute});
+
         }
+
     }
 }
