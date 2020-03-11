@@ -17,10 +17,7 @@ namespace Event_Hub_API.Models
         [Range(1, 200, ErrorMessage = "{0} must be between {1} and {2}")]
         public int Units { get; set; }
 
-        [Required(ErrorMessage = "Event is required.")]
-        public int? EventId { get; set; }
-
-        [ForeignKey ("EventId")]
-        public virtual Event Event { get; set; }
+        [Required]
+        public string EventName { get; set; }
     }
 }
