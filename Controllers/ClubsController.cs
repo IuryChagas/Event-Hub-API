@@ -166,7 +166,7 @@ namespace Event_Hub_API.Controllers
 
                         Database.SaveChanges();
                         Response.StatusCode = 200;
-                        return new ObjectResult("");
+                        return new ObjectResult(new {msg = "Successful change!"});
 
                     }else {
                         Response.StatusCode = 400;
@@ -193,7 +193,7 @@ namespace Event_Hub_API.Controllers
                 Database.Clubs.Remove(ClubId);
                 Database.SaveChanges();
 
-                return Ok();
+                return new ObjectResult(new {msg = "Club deleted successfully!"});
             }
             catch (Exception)
             {
